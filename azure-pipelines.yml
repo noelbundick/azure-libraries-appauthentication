@@ -1,0 +1,23 @@
+name: $(major).$(minor).$(patch)-build.$(rev:r)
+
+pool:
+  vmImage: 'vs2017-win2016'
+
+variables:
+  buildConfiguration: Release
+  major: 0
+  minor: 0
+  patch: 2
+
+steps:
+- script: |
+    dotnet build -c $(buildConfiguration)
+    dotnet pack Authentication/Authentication.csproj -c $(buildConfiguration) /p:PackageVersion=$(Build.BuildNumber) --output $(Build.ArtifactStagingDirectory) --no-build --no-restore
+  workingDirectory: src
+  displayName: Build package
+
+- task: NuGetCommand@2
+  displayName: Publish to internal feed
+  inputs:
+    command: push
+    publishVstsFeed: bits
